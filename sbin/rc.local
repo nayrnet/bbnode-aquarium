@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Setup IO at boot.
+CAPE1=`cat /sys/devices/bone_capemgr.9/slots|grep unimod`
+CAPE2=`cat /sys/devices/bone_capemgr.9/slots|grep w1`
+if [ "$CAPE1" == "" ]; then
+	echo unimod > /sys/devices/bone_capemgr.9/slots
+fi
+if [ "$CAPE2" == "" ]; then
+	echo w1:00A1 > /sys/devices/bone_capemgr.9/slots
+fi
+
+# PWM Setup
+if [ ! -d "/sys/class/pwm/pwm6/" ]; then
+	for PWM in 0 1 2 3 4 5 6 7 ; do   echo $PWM > /sys/class/pwm/export; done
+fi
+
+echo pwm > /sys/devices/ocp.*/P9_31_pinmux.*/state
+echo pwm > /sys/devices/ocp.*/P8_13_pinmux.*/state
+echo pwm > /sys/devices/ocp.*/P9_14_pinmux.*/state
+echo pwm > /sys/devices/ocp.*/P9_21_pinmux.*/state
+echo pwm > /sys/devices/ocp.*/P9_42_pinmux.*/state
+echo pwm > /sys/devices/ocp.*/P8_19_pinmux.*/state
+echo pwm > /sys/devices/ocp.*/P8_34_pinmux.*/state
+
+# Permissions for Domoticz
+chown -R domoticz.domoticz /sys/class/pwm/pwm6/*
+chown -R domoticz.domoticz /sys/class/pwm/pwm5/*
+chown -R domoticz.domoticz /sys/class/pwm/pwm4/*
+chown -R domoticz.domoticz /sys/class/pwm/pwm3/*
+chown -R domoticz.domoticz /sys/class/pwm/pwm2/*
+chown -R domoticz.domoticz /sys/class/pwm/pwm1/*
+chown -R domoticz.domoticz /sys/class/pwm/pwm0/*
+chown -R domoticz.domoticz /sys/class/gpio/gpio*
+
+# Pull Up Resitor for Float & Flood Sensors
+/usr/sbin/config-pin P8_44 in+
+/usr/sbin/config-pin P8_43 in+
+exit 0

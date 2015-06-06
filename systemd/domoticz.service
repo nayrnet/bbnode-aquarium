@@ -1,0 +1,13 @@
+[Unit]
+Description=domoticz service
+After=network.target
+
+[Service]
+Type=simple
+User=domoticz
+Group=domoticz
+ExecStart=/home/domoticz/dev-domoticz/domoticz -www 8081 -loglevel=1 -log /tmp/domoticz.log
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

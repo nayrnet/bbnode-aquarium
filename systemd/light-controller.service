@@ -1,0 +1,13 @@
+[Unit]
+Description=aquarium light controller
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/root/bin/light-controller.js
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

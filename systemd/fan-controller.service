@@ -1,0 +1,13 @@
+[Unit]
+Description=aquarium fan controller
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/root/bin/fan-controller.js
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target
