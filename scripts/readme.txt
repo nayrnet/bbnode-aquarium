@@ -1,1 +1,1 @@
-on/off scripts for domoticz
+dirty bash scripts for domoticz

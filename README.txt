@@ -13,6 +13,7 @@ HARDWARE:
 	2x Quad mosFet breakout boards
 	2x Computer Fans (140mm & 70mm)
 	55 Gallon Aquarium
+	48in BuildMyLed MC Series Dutch Lamp
 	Much much more..
 
 SOFTWARE:
@@ -22,12 +23,10 @@ SOFTWARE:
 	NTPd		Time Sync
 	nginx		x509 Authentication
 
-SUMMARY: 
-	devicetree			contains files to make avilable various GPIO on the BeagleBoneBlack
-	systemd 			contains systemd scripts to start services
-	bin/light-controller.js		service to ramp up/down lights
-	bin/fan-controller.js		service to set fan speed based on aquarium temps
-	bin/aquarium-controller.js	service to set indicator LED and domoticz
+TODO:
+	Dosing Pumps
+	co2 System
+	pH monitoring
 
 BBB PIN MAPPING: 
 	P8_11	Dallas 1-Wire Temp Sensor
