@@ -1,13 +1,14 @@
 [Unit]
-Description=aquarium light controller
-After=network.target
+Description=Planted Aquarium Light Controller
+After=domoticz.service
 
 [Service]
-Type=simple
+Type=forking
 User=root
 Group=root
+PIDFile=/var/run/light-controller.pid
 ExecStart=/root/bin/light-controller.js
-StandardOutput=null
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

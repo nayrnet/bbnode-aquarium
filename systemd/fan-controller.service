@@ -1,13 +1,14 @@
 [Unit]
-Description=aquarium fan controller
-After=network.target
+Description=Planted Aquarium FAN Controller
+After=domoticz.service
 
 [Service]
-Type=simple
+Type=forking
 User=root
 Group=root
+PIDFile=/var/run/fan-controller.pid
 ExecStart=/root/bin/fan-controller.js
-StandardOutput=null
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
