@@ -8,19 +8,22 @@ HARDWARE:
 	2 Stainless Steel Float Valves
 	1/2in 12v Gravity Valve
 	1/2in 12v Pressure Valve
-	Large Pressurized RO Water Line
+	SHURFlo 3.3GPM 120v Delivery Pump
+	5 Stage RO/DI Filter
+	Low level DC Dual SSR Relay Board
+	DS3231 RTC Module
+	Outdoor Dallas 1-Wire Temperature Probes
 	4x Peristaltic 12v Dosing Pumps
 	2x Quad mosFet breakout boards
 	2x Computer Fans (140mm & 70mm)
 	55 Gallon Aquarium
 	48in BuildMyLed MC Series Dutch Lamp
-	Much much more..
+	Blood, Sweat, Tears and so much more.. 
 
 SOFTWARE:
-	Debian Stable	Operating System
+	Debian 7.x	Minimal Image
 	NodeJS		Scripting Language
-	Domoticz Beta	Web Interface & Remote Node
-	NTPd		Time Sync
+	Domoticz 	Web Interface & HA Node
 	nginx		x509 Authentication
 
 TODO:
