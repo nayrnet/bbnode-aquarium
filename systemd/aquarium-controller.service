@@ -1,0 +1,14 @@
+[Unit]
+Description=Planted Aquarium IO Controller
+After=domoticz.service
+
+[Service]
+Type=forking
+User=root
+Group=root
+PIDFile=/var/run/aquarium-controller.pid
+ExecStart=/root/bin/aquarium-controller.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
