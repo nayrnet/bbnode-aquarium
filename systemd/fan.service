@@ -6,8 +6,8 @@ After=domoticz.service
 Type=forking
 User=root
 Group=root
-PIDFile=/var/run/fan-controller.pid
-ExecStart=/root/bin/fan-controller.js
+ExecStart=/root/bbnode-aquarium/bin/fan.js
+PIDFile=/var/run/fan.pid
 Restart=always
 
 [Install]

@@ -24,7 +24,8 @@ var Gpio = require('onoff').Gpio,				// Initalize GPIO
 var w1bus 		= require('node-w1bus')			// npm install node-w1bus
 var fs 			= require('fs')
 var request 		= require('request') 			// npm install request
-require('daemon')()						// npm install daemon
+var math 		= require('mathjs')			// npm install mathjs
+//require('daemon')()						// npm install daemon
 
 // GLOBALS
 var bus 		= w1bus.create()
@@ -32,20 +33,20 @@ var floatStatus 	= float.readSync()
 var pumpStatus 		= pump.readSync()
 var fillStatus 		= fill.readSync()
 var drainStatus 	= drain.readSync()
-var blink, tempSet, status = 0, tempStatus = 0, fanStatus = 0, lightStatus = 0, AuxStatus = 0, floodStatus = 0
+var blink, tempSet, pulse, status = 0, tempStatus = 0, fanStatus = 0, lightStatus = 0, AuxStatus = 0, floodStatus = 0
 
 // INIT
 fs.writeFileSync("/var/run/aquarium-controller.pid", process.pid)
 setupGpio()
 setIndicator(1)
 interrupts()
-updateLights()
-updateFan()
+//updateLights()
+//updateFan()
 readTemp()
 
 // TIMERS
 setInterval(readTemp, 60000)			// Check temp
-setInterval(updateIndicators, 500)		// Update Indicators
+setInterval(updateLED, 2000)			// Update Indicators
 
 // FUNCTIONS
 function interrupts() { 			// Initalize interrupts
@@ -68,61 +69,41 @@ function interrupts() { 			// Initalize interrupts
 	})
 }
 
-function updateIndicators() {
-	if(floodStatus) { setIndicator(4) }					// Indicate Flood Activity
-	else if(tempStatus > 1) { setIndicator(tempStatus) }			// Indicate Temp Status
-	else if(!fanStatus && tempSet > min_temp) { setIndicator(1); console.log('fan') }		// Indicate FAN is off
-	else if(pumpStatus) { setIndicator(1) ; console.log('pump')}					// Indicate Pump is off
-	else if(fillStatus) { setIndicator(1); console.log('fill') }					// Indicate Fill Activity
+function updateLED() {
+	if(floodStatus) { setIndicator(4) }							// Indicate Flood Activity
+	else if(tempStatus > 1) { setIndicator(tempStatus) }					// Indicate Temp Status
+	else if(!fanStatus && tempSet > min_temp) { setIndicator(1); console.log('fan') }	// Indicate FAN is off
+	else if(pumpStatus) { setIndicator(1) ; console.log('pump')}				// Indicate Pump is off
+	else if(fillStatus) { setIndicator(1); console.log('fill') }				// Indicate Fill Activity
 	else if(drainStatus) { setIndicator(1); console.log('drain') }				// Indicate Fill Activity
-	else { setIndicator(0) }						// All is normal
+	else { setIndicator(0) }								// All is normal
 }
 
-function setIndicator(level) {				// Sets Indicator LED's
+function setIndicator(level) {									// Sets Indicator LED's
 	status = level
-	clearInterval(blink)
-	fs.writeFileSync(greenLed + "run", 1)
-	fs.writeFileSync(redLed + "run", 1)
-	if (level == 0) {				// Solid Green
+	if (level == 0) {									// Solid Green
 		console.log('indicator: solid green')
-		fs.writeFileSync(greenLed + "duty_ns", 12500)
-		fs.writeFileSync(redLed + "duty_ns", 0)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=1;svalue=idle')
-	} else if (level == 1) {			// Flashing Yellow
+		clearInterval(blink)
+		writeDuty(greenLed, 12500)
+		writeDuty(redLed, 0)
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=1&svalue=idle')
+	} else if (level == 1) {								// Pulsing Yellow
                 console.log('indicator: blinking yellow')
-                fs.writeFileSync(greenLed + "duty_ns", 25000)
-                fs.writeFileSync(redLed + "duty_ns", 8000)
-                request(baseuri + 'type=command&param=udevice&idx=35&nvalue=2;svalue=caution')
-                blink = setInterval(function(){
-                        fs.writeFileSync(greenLed + 'run',readIndicator(greenLed) === 0 ? 1 : 0)
-                        fs.writeFileSync(redLed + 'run',readIndicator(redLed) === 0 ? 1 : 0)
-                }, 500)
-	} else if (level == 2) {			// Flashing Orange
+                blink = setInterval(pulseY, 10)
+                request(baseuri + 'type=command&param=udevice&idx=35&nvalue=2&svalue=caution')
+	} else if (level == 2) {								// Pulsing Orange
 		console.log('indicator: blinking orange')
-		fs.writeFileSync(greenLed + "duty_ns", 25000)
-		fs.writeFileSync(redLed + "duty_ns", 25000)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=3;svalue=caution')
-		blink = setInterval(function(){ 
-			fs.writeFileSync(greenLed + 'run',readIndicator(greenLed) === 0 ? 1 : 0)
-			fs.writeFileSync(redLed + 'run',readIndicator(redLed) === 0 ? 1 : 0)
-		}, 500)
-	} else if (level == 3) {			// Flashing RED
+                blink = setInterval(pulseO, 10)
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=3&svalue=caution')
+	} else if (level == 3) {								// Pulsing RED
 		console.log('indicator: blinking red')
-		fs.writeFileSync(greenLed + "duty_ns", 0)
-		fs.writeFileSync(redLed + "duty_ns", 25000)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4;svalue=warning')
-		blink = setInterval(function(){ 
-			fs.writeFileSync(redLed + 'run',readIndicator(redLed) === 0 ? 1 : 0)
-		}, 500)
-	} else if (level == 4) {			// RED ALERT
+                blink = setInterval(pulseR, 10)
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4&svalue=warning')
+	} else if (level == 4) {								// RED ALERT
 		console.log('indicator: RED ALERT')
-		fs.writeFileSync(greenLed + "duty_ns", 0)
-		fs.writeFileSync(redLed + "duty_ns", 25000)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4;svalue=ALERT!')
-		fs.writeFileSync("/sys/class/pwm/pwm6/run", 0) // White Lamp Channel
-		fs.writeFileSync("/sys/class/pwm/pwm0/run", 0) // Blue Lamp Channel
-		fs.writeFileSync("/sys/class/pwm/pwm3/run", 1) // RED Lamp Channel
-		fs.writeFileSync("/sys/class/pwm/pwm3/duty", 25000) // RED Lamp Channel
+		writeDuty(greenLed, 0)
+		writeDuty(redLed, 25000)
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4&svalue=ALERT!')
 	}
 }
 
@@ -221,10 +202,20 @@ function updateDrain(value) {	// Update Drain Switch in Domoticz
 		drainStatus = value
 		console.log('drain: '+value)
 }
+function pulse() {
 
+}
+function writeDuty(c,duty) {
+	fs.writeFileSync(c + "duty_ns", duty)
+}
+function sWave(waves,step,steps,min,max) {      // Calculate Position on S-Wave
+        return math.round(((max-min)/waves) / math.pi * ( math.pi * step / (steps/waves) - math.cos( math.pi * step / (steps/waves)) * math.sin( math.pi * step / (steps/waves))) +min ,0)
+}
 function setupGpio() {
 	var duty_max = 25000
 	fs.writeFile(greenLed + "period_ns", duty_max, function(err) { if(err) { return console.log(err) } }) 
 	fs.writeFile(redLed + "period_ns", duty_max, function(err) { if(err) { return console.log(err) } }) 
+	fs.writeFile(greenLed + "run", 1, function(err) { if(err) { return console.log(err) } }) 
+	fs.writeFile(redLed + "run", 1, function(err) { if(err) { return console.log(err) } }) 
 }
 // END

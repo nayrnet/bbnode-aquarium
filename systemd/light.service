@@ -1,13 +1,13 @@
 [Unit]
-Description=Planted Aquarium IO Controller
+Description=Planted Aquarium Light Controller
 After=domoticz.service
 
 [Service]
 Type=forking
 User=root
 Group=root
-PIDFile=/var/run/aquarium-controller.pid
-ExecStart=/root/bin/aquarium-controller.js
+PIDFile=/var/run/light.pid
+ExecStart=/root/bbnode-aquarium/bin/light.js
 Restart=always
 
 [Install]

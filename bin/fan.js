@@ -16,7 +16,7 @@ var water 	= '28-000005e94350'			// ID of 1-Wire Water Sensor
 var ambient 	= '28-000005ea4545'			// ID of 1-Wire Ambient Sensor
 var max_duty 	= 25000					// 25 kHz
 var min_duty 	= 6250					// Minimum Speed (25%)
-var max_temp 	= 26					// 75.2F
+var max_temp 	= 24					// 75.2F
 var min_temp 	= 22					// 71.6F
 var baseuri 	= 'http://127.0.0.1:8081/json.htm?type=command&param=udevice&idx=34&svalue=';	// Domoticz Base URL for % json update
 
@@ -37,8 +37,8 @@ setupGpio()
 readTemp()
 
 // TIMERS
-setInterval(readTemp, 20000)			// Update every 20s
-setInterval(updateDuty, 30000)			// Update every 30s
+setInterval(readTemp, 10000)			// Update every 10s
+setInterval(updateDuty, 10000)			// Update every 10s
 setInterval(updateDomo, 60000)			// Update every 60s
 
 // FUNCTIONS
@@ -50,9 +50,6 @@ function updateDuty() {
 		steps = (max_temp-min_temp) * 1024
 		duty = sWave(1,step,steps,min_duty,max_duty)
 	}
-	console.log(step)
-	console.log(steps)
-	console.log(duty)
 	fs.writeFileSync(fan + "duty_ns", duty)
 }
 function readTemp() {

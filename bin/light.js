@@ -102,7 +102,7 @@ function readDuty(channel) {							// Return Channel Duty
 	var data = fs.readFileSync(ch[channel] + "duty_ns","utf8")
 	return(parseInt(data.replace(/\n$/, '')))
 }
-function writeDuty(channel,duty) {
+function writeDuty(channel,duty) {						// Write Channel Duty
 	if(duty<600) { duty = 0 }						// Minimum without flickering
 	fs.writeFileSync(ch[channel] + "duty_ns", duty)
 }
