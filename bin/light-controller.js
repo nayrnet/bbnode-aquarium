@@ -12,16 +12,15 @@
 // CONFIGURATION
 var rampUpTime 		= 30720				// Ramp up in seconds
 var rampDownTime 	= 10800				// Ramp down in seconds
-var noonTime 		= 1800				// Time at Max Duty in Seconds
+var noonTime 		= 60				// Time at Max Duty in Seconds
 var dutyCycle 		= 25000				// Max Duty 
 var offHour 		= 22				// What time to end evening lights
 var offMin 		= 45
+var ch = [ 		'/dev/null',						
+			'/sys/class/pwm/pwm6/',		// Path to Channel 1 (White)
+			'/sys/class/pwm/pwm3/',		// Path to Channel 2 (Red)
+			'/sys/class/pwm/pwm1/' ]	// Path to Channel 3 (Blue)
 var baseuri 	= 'http://127.0.0.1:8081/json.htm?'	// Base URL for JSON Updates
-var ch = [ 
-	'all',						
-	'/sys/class/pwm/pwm6/',				// Path to Channel 1 (White)
-	'/sys/class/pwm/pwm3/',				// Path to Channel 2 (Red)
-	'/sys/class/pwm/pwm1/' ]			// Path to Channel 3 (Blue)
 
 // REQUIRED MODULES 
 require('daemon')();					// npm install daemon
@@ -52,7 +51,7 @@ function lightCalc() {
 	end = moment(times.sunset).diff(new Date(),'seconds')				// Seconds until sunset
 	level = [ 0, 0, 0, 0 ]
 	if (start > 0 && start <= rampUpTime) {					// Ramp Up
-		var l = sWave(2, start, rampUpTime, 500, dutyCycle)
+		var l = sWave(2, start, rampUpTime, 0, dutyCycle)
 		level = [ l, l, l, l ]
 		if(!isOn(2)) { powerToggle(1) }
 	} else if (end > 0 && end <= rampDownTime) {				// Ramp Down
