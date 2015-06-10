@@ -16,7 +16,7 @@ var noonTime 		= 60				// Time at Max Duty in Seconds
 var dutyCycle 		= 25000				// Max Duty 
 var offHour 		= 22				// What time to end evening lights
 var offMin 		= 45
-var ch = [ 		'/dev/null',						
+var ch 			= [ '/dev/null',						
 			'/sys/class/pwm/pwm6/',		// Path to Channel 1 (White)
 			'/sys/class/pwm/pwm3/',		// Path to Channel 2 (Red)
 			'/sys/class/pwm/pwm1/' ]	// Path to Channel 3 (Blue)
@@ -40,8 +40,8 @@ lightCalc()
 updateDomo()
 
 // TIMERS
-setInterval(lightCalc,20000)							// 20 Seconds
-setInterval(updateDomo,60000)							// 60 Seconds
+setInterval(lightCalc,20000)				// 20 Seconds
+setInterval(updateDomo,60000)				// 60 Seconds
 
 // FUNCTIONS
 function lightCalc() {
@@ -79,26 +79,26 @@ function lightCalc() {
 function sWave(waves,step,steps,min,max) { 					// Calculate Position on S-Wave
         return math.round(((max-min)/waves) / math.pi * ( math.pi * step / (steps/waves) - math.cos( math.pi * step / (steps/waves)) * math.sin( math.pi * step / (steps/waves))) +min ,0)
 }
-function powerToggle(state) {
+function powerToggle(state) {							// Power ON/OFF Light
 	for (var i=1; i<ch.length;++i) {
 		fs.writeFileSync(ch[i] + 'run', state)
 	}
 }
 function setupGpio() {								// On first run we might need this.
-	for (var i=1;i< ch.length;++i) {			// Setup PWM
+	for (var i=1;i< ch.length;++i) {
 		fs.writeFile(ch[i] + "period_ns", dutyCycle, function(err) { if(err) { return console.log(err); } })
 	}
 }
-function updateDomo() {
+function updateDomo() {								// Update Devices in Domoticz
 	request(baseuri + 'type=command&param=udevice&idx=24&svalue=' + (readDuty(1)/250))
 	request(baseuri + 'type=command&param=udevice&idx=25&svalue=' + (readDuty(2)/250))
 	request(baseuri + 'type=command&param=udevice&idx=26&svalue=' + (readDuty(3)/250))
 }
-function isOn(channel) {
+function isOn(channel) {							// Return Channel Power
 	var data = fs.readFileSync(ch[channel] + "run","utf8")
 	return(parseInt(data.replace(/\n$/, '')))
 }
-function readDuty(channel) {
+function readDuty(channel) {							// Return Channel Duty
 	var data = fs.readFileSync(ch[channel] + "duty_ns","utf8")
 	return(parseInt(data.replace(/\n$/, '')))
 }
