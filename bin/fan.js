@@ -32,7 +32,7 @@ var water_temp, ambient_temp, duty = 0
 var bus = w1bus.create()
 
 // INIT
-fs.writeFileSync("/var/run/fan-controller.pid", process.pid)
+fs.writeFileSync("/var/run/fan.pid", process.pid)
 setupGpio()
 readTemp()
 

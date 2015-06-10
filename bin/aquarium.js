@@ -36,7 +36,7 @@ var drainStatus 	= drain.readSync()
 var blink, tempSet, pulse, status = 0, tempStatus = 0, fanStatus = 0, lightStatus = 0, AuxStatus = 0, floodStatus = 0
 
 // INIT
-fs.writeFileSync("/var/run/aquarium-controller.pid", process.pid)
+fs.writeFileSync("/var/run/aquarium.pid", process.pid)
 setupGpio()
 setIndicator(1)
 interrupts()

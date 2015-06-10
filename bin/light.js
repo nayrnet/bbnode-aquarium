@@ -34,7 +34,7 @@ var fs 			= require('fs')
 var overRide = 0
 
 // INIT
-fs.writeFileSync("/var/run/light-controller.pid", process.pid)
+fs.writeFileSync("/var/run/light.pid", process.pid)
 setupGpio()
 lightCalc()
 updateDomo()
