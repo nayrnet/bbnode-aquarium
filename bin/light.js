@@ -64,8 +64,8 @@ function lightCalc() {
 		if(off<1) { 
 			powerToggle(0) 
 		} else {
-			level[1] = sWave(1, off, duration, 0, 1000)
-			level[2] = sWave(2, off, duration, 0, 2500)
+			level[1] = sWave(3, off, duration, 600, 1500)
+			level[2] = sWave(2, off, duration, 600, 3000)
 			level[3] = sWave(1, off, duration, 600, 3000)
 		}
 	} else if (start>rampUpTime && end>rampDownTime) {			// Noon

@@ -46,9 +46,10 @@ function updateDuty() {
 	if (water_temp > max_temp || ambient_temp > (max_temp +4) ) { duty = max_duty }
 	else if (water_temp < min_temp) { duty = 0 }
 	else {
-		step = (max_temp-water_temp) * 1024
-		steps = (max_temp-min_temp) * 1024
+		steps = math.subtract(max_temp,min_temp)
+		step = math.subtract(water_temp,max_temp) + steps
 		duty = sWave(1,step,steps,min_duty,max_duty)
+		duty = sWave(1,math.round(step*100),math.round(steps*100),min_duty,max_duty)
 	}
 	fs.writeFileSync(fan + "duty_ns", duty)
 }

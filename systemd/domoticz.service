@@ -6,7 +6,8 @@ After=network.target
 Type=simple
 User=domoticz
 Group=domoticz
-ExecStart=/home/domoticz/dev-domoticz/domoticz -www 8081 -loglevel=1 -log /tmp/domoticz.log
+SuccessExitStatus=3
+ExecStart=/home/domoticz/dev-domoticz/domoticz -www 8081 -loglevel=1 -syslog
 StandardOutput=null
 
 [Install]

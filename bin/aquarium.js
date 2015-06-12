@@ -25,7 +25,7 @@ var w1bus 		= require('node-w1bus')			// npm install node-w1bus
 var fs 			= require('fs')
 var request 		= require('request') 			// npm install request
 var math 		= require('mathjs')			// npm install mathjs
-//require('daemon')()						// npm install daemon
+require('daemon')()						// npm install daemon
 
 // GLOBALS
 var bus 		= w1bus.create()
@@ -41,7 +41,7 @@ setupGpio()
 setIndicator(1)
 interrupts()
 //updateLights()
-//updateFan()
+updateFan()
 readTemp()
 
 // TIMERS
@@ -79,34 +79,53 @@ function updateLED() {
 	else { setIndicator(0) }								// All is normal
 }
 
-function setIndicator(level) {									// Sets Indicator LED's
-	status = level
-	if (level == 0) {									// Solid Green
-		console.log('indicator: solid green')
-		clearInterval(blink)
-		writeDuty(greenLed, 12500)
-		writeDuty(redLed, 0)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=1&svalue=idle')
-	} else if (level == 1) {								// Pulsing Yellow
-                console.log('indicator: blinking yellow')
-                blink = setInterval(pulseY, 10)
-                request(baseuri + 'type=command&param=udevice&idx=35&nvalue=2&svalue=caution')
-	} else if (level == 2) {								// Pulsing Orange
-		console.log('indicator: blinking orange')
-                blink = setInterval(pulseO, 10)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=3&svalue=caution')
-	} else if (level == 3) {								// Pulsing RED
-		console.log('indicator: blinking red')
-                blink = setInterval(pulseR, 10)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4&svalue=warning')
-	} else if (level == 4) {								// RED ALERT
-		console.log('indicator: RED ALERT')
-		writeDuty(greenLed, 0)
-		writeDuty(redLed, 25000)
-	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4&svalue=ALERT!')
+function setIndicator(level) {				// Sets Indicator LED's
+	status = level;
+	clearInterval(blink);
+	fs.writeFileSync(greenLed + "run", 1);
+	fs.writeFileSync(redLed + "run", 1);
+	if (level == 0) {				// Solid Green
+		console.log('indicator: solid green');
+		fs.writeFileSync(greenLed + "duty_ns", 12500);
+		fs.writeFileSync(redLed + "duty_ns", 0);
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=1&svalue=idle');
+	} else if (level == 1) {			// Flashing Yellow
+		console.log('indicator: blinking yellow');
+		fs.writeFileSync(greenLed + "duty_ns", 25000);
+		fs.writeFileSync(redLed + "duty_ns", 8000);
+		request(baseuri + 'type=command&param=udevice&idx=35&nvalue=2&svalue=caution');
+		blink = setInterval(function(){
+			fs.writeFileSync(greenLed + 'run',readIndicator(greenLed) === 0 ? 1 : 0)
+			fs.writeFileSync(redLed + 'run',readIndicator(redLed) === 0 ? 1 : 0)
+		}, 500);
+	} else if (level == 2) {			// Flashing Orange
+		console.log('indicator: blinking orange');
+		fs.writeFileSync(greenLed + "duty_ns", 25000);
+		fs.writeFileSync(redLed + "duty_ns", 25000);
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=3&svalue=caution');
+		blink = setInterval(function(){ 
+			fs.writeFileSync(greenLed + 'run',readIndicator(greenLed) === 0 ? 1 : 0)
+			fs.writeFileSync(redLed + 'run',readIndicator(redLed) === 0 ? 1 : 0)
+		}, 500);
+	} else if (level == 3) {			// Flashing RED
+		console.log('indicator: blinking red');
+		fs.writeFileSync(greenLed + "duty_ns", 0);
+		fs.writeFileSync(redLed + "duty_ns", 25000);
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4&svalue=warning');
+		blink = setInterval(function(){ 
+			fs.writeFileSync(redLed + 'run',readIndicator(redLed) === 0 ? 1 : 0)
+		}, 500);
+	} else if (level == 4) {			// RED ALERT
+		console.log('indicator: RED ALERT');
+		fs.writeFileSync(greenLed + "duty_ns", 0);
+		fs.writeFileSync(redLed + "duty_ns", 25000);
+	        request(baseuri + 'type=command&param=udevice&idx=35&nvalue=4&svalue=ALERT!');
+		fs.writeFileSync("/sys/class/pwm/pwm6/run", 0); // White Lamp Channel
+		fs.writeFileSync("/sys/class/pwm/pwm0/run", 0); // Blue Lamp Channel
+		fs.writeFileSync("/sys/class/pwm/pwm3/run", 1); // RED Lamp Channel
+		fs.writeFileSync("/sys/class/pwm/pwm3/duty", 25000); // RED Lamp Channel
 	}
 }
-
 function readIndicator(color) {
         var duty = parseInt(fs.readFileSync(color + 'duty_ns', 'utf8'),10)
 	return duty
@@ -201,9 +220,6 @@ function updateDrain(value) {	// Update Drain Switch in Domoticz
 	        request(baseuri + 'type=command&param=udevice&idx=6&nvalue=' + value)
 		drainStatus = value
 		console.log('drain: '+value)
-}
-function pulse() {
-
 }
 function writeDuty(c,duty) {
 	fs.writeFileSync(c + "duty_ns", duty)
